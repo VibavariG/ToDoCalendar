@@ -18,6 +18,6 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path('polls/', include('polls.urls')),  #chops off "polls/" from the url it got and sends the rest to the included page
     path('admin/', admin.site.urls),
-    path("polls/", include("polls.urls")),  #chops off "polls/" from the url it got and sends the rest to the included page
 ]
