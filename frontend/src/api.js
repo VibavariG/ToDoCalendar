@@ -16,7 +16,6 @@ api.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
             // this is the format to pass a JWT access token
         }
-        console.log(config);
         return config;
     },
     (error) => {
