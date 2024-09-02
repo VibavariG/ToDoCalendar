@@ -7,10 +7,15 @@ function Home() {
   const [notes, setNotes] = useState([]);
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
+  const [frequency, setFrequency] = useState('one-time');
 
   useEffect(() => {
     getNotes();
   }, []);
+
+  const handleFrequencyChange = (e) => {
+    setFrequency(e.target.value);
+  };
 
   const getNotes = () => {
     api
@@ -39,7 +44,11 @@ function Home() {
     api
       .post("/api/notes/", { content, title })
       .then((res) => {
-        if (res.status === 201) alert("Note created!");
+        if (res.status === 201) {
+          setTitle("")
+          setContent("")
+          alert("Note created!");
+        }
         else alert("Failed to create note.");
         getNotes();
       })
@@ -54,6 +63,7 @@ function Home() {
           <Note note={note} onDelete={deleteNote} key={note.id} />
         ))}
       </div>
+
       <h2>Create a Note</h2>
       <form onSubmit={createNote}>
         <label htmlFor="title">Title:</label>
@@ -63,8 +73,8 @@ function Home() {
           id="title"
           name="title"
           required
-          onChange={(e) => setTitle(e.target.value)}
           value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
         <label htmlFor="content">Content:</label>
         <br />
@@ -75,7 +85,49 @@ function Home() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
         ></textarea>
-        <br />
+
+        {/* add radio button for one time or recurring */}
+        <label htmlFor="frequency">Frequency:</label>
+        <div className="radio-container">
+          <div className="radio-option">
+            <input className="radio-btn" type="radio" id="one-time" name="frequency" value="one-time" checked={frequency === 'one-time'} onChange={handleFrequencyChange}/>
+            <label className="radio-label" htmlFor="one-time">One-time</label>
+          </div>
+          <div className="radio-option">
+            <input className="radio-btn" type="radio" id="recurring" name="frequency" value="recurring" checked={frequency === 'recurring'} onChange={handleFrequencyChange}/>
+            <label className="radio-label" htmlFor="recurring">Recurring</label>
+          </div>
+        </div>
+
+        {/* Conditional rendering based on the selected frequency */}
+        {frequency === 'one-time' && (
+          <div>
+            <label htmlFor="deadline-date">Deadline Date:</label>
+            <input
+              type="date"
+              id="deadline-date"
+              name="deadline-date"
+            />
+          </div>
+        )}
+
+        {frequency === 'recurring' && (
+          <div>
+            <label htmlFor="start-date">Start Date:</label>
+            <input
+              type="date"
+              id="start-date"
+              name="start-date"
+            />
+            <label htmlFor="end-date">End Date:</label>
+            <input
+              type="date"
+              id="end-date"
+              name="end-date"
+            />
+          </div>
+        )}
+        
         <input type="submit" value="Submit"></input>
       </form>
     </div>
