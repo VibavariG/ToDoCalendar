@@ -12,6 +12,8 @@ function Form({route, method}) {
     const navigate = useNavigate();
 
     const name = method === "login" ? "Login" : "Register";
+    const altname = method === "login" ? "Register" : "Login"
+    const alttext = method === "login" ? "Don't have an account?" : "Already have an account?"
 
     const handleSubmit = async (e) => {
         setLoading(true);
@@ -34,6 +36,14 @@ function Form({route, method}) {
         }
     };
 
+    const handleAltButtonClick = () => {
+        if (method === "login") {
+            navigate("/register")
+        } else {
+            navigate("/login")
+        }
+    }
+
     return <form onSubmit={handleSubmit} className="form-container">
         <h1>{name}</h1>
         <input
@@ -54,6 +64,8 @@ function Form({route, method}) {
         <button className="form-button" type="submit">
             {name}
         </button>
+        <p className="form-text">{alttext}</p>
+        <button className="form-altbutton" onClick={handleAltButtonClick}>{altname}</button>
     </form>
 }
 
