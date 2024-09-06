@@ -6,11 +6,14 @@ function NoteForm( { getNotes }) {
     const [content, setContent] = useState("");
     const [title, setTitle] = useState("");
     const [frequency, setFrequency] = useState('one-time');
-    const [startDate, setStartDate] = useState(() => {
+    const [start_date, setStartDate] = useState(() => {
         const today = new Date();
         return today.toISOString().split('T')[0]; // Formats to 'YYYY-MM-DD'
     });
-    const [endDate, setEndDate] = useState('');
+    const [end_date, setEndDate] = useState(() => {
+        const today = new Date();
+        return today.toISOString().split('T')[0]; // Formats to 'YYYY-MM-DD'
+    });
 
     const handleFrequencyChange = (e) => {
         setFrequency(e.target.value);
@@ -34,14 +37,14 @@ function NoteForm( { getNotes }) {
         }
 
         console.log('Frequency:', frequency);
-        console.log('Start Date:', startDate);
-        console.log('End Date:', endDate);
+        console.log('Start Date:', start_date);
+        console.log('End Date:', end_date);
     }
 
     const createNote = (e) => {
         e.preventDefault();
         api
-          .post("/api/notes/", { content, title })
+          .post("/api/notes/", { content, title, frequency, start_date, end_date })
           .then((res) => {
             if (res.status === 201) {
               setTitle("")
@@ -96,7 +99,7 @@ function NoteForm( { getNotes }) {
             type="date"
             id="deadline-date"
             name="deadline-date"
-            value={startDate}
+            value={end_date}
             onChange={handleDateChange}
             />
         </div>
@@ -109,7 +112,7 @@ function NoteForm( { getNotes }) {
             type="date"
             id="start-date"
             name="start-date"
-            value={startDate}
+            value={start_date}
             onChange={handleDateChange}
             />
             <label htmlFor="end-date">End Date:</label>
@@ -117,7 +120,7 @@ function NoteForm( { getNotes }) {
             type="date"
             id="end-date"
             name="end-date"
-            value={endDate}
+            value={end_date}
             onChange={handleDateChange}
             />
         </div>

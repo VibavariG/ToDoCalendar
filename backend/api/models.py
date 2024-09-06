@@ -6,6 +6,9 @@ class Note(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    frequency = models.CharField(max_length=100)
+    start_date = models.DateField()
+    end_date = models.DateField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
 
     def __str__(self):
