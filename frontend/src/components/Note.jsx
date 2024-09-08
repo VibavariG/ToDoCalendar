@@ -5,12 +5,8 @@ function Note({ note, onDelete }) {
     const formattedDate = new Date(note.created_at).toLocaleDateString("en-US");
 
     const today = new Date();
-
-    const dateRange = [...Array(7)].map((_, i) => {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        return date.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
-    });
+    console.log(today);
+    
 
     const handleNoteUpdate = () => {
 

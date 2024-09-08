@@ -6,7 +6,7 @@ import "../styles/Home.css"
 
 function Home() {
   const [notes, setNotes] = useState([]);
-  
+  const [openPanels, setOpenPanels] = useState({});
   
   useEffect(() => {
     getNotes();
@@ -23,6 +23,53 @@ function Home() {
       .catch((err) => alert(err));
   };
 
+  const groupNotesByDate = () => {
+    return notes.reduce((grouped, note) => {
+      const date = note.end_date;
+      console.log("Hi")
+      console.log(typeof(date))
+      if(!grouped[date]) {
+        grouped[date] = [];
+      }
+      grouped[date].push(note);
+      return grouped;
+    }, {});
+  };
+
+  const groupedNotes = groupNotesByDate();
+
+  const togglePanel = (date) => {
+    setOpenPanels((prevState) => ({
+      ...prevState,
+      [date]: !prevState[date],
+    }));
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString); // Parse the date string into a Date object
+    const day = date.getDate(); // Get day (1-31)
+    
+    // Determine the correct ordinal suffix for the day
+    const ordinalSuffix = (day) => {
+      if (day > 3 && day < 21) return "th";
+      switch (day % 10) {
+        case 1: return "st";
+        case 2: return "nd";
+        case 3: return "rd";
+        default: return "th";
+      }
+    };
+  
+    const formattedDate = new Intl.DateTimeFormat("en-GB", {
+      month: "short",
+      year: "numeric",
+      weekday: "long",
+    }).format(date);
+  
+    return `${day}${ordinalSuffix(day)} ${formattedDate}`; // Example: 6th Sept, 2024, Friday
+  };
+  
+
   const deleteNote = (id) => {
     api
       .delete(`/api/notes/delete/${id}/`)
@@ -34,15 +81,32 @@ function Home() {
       .catch((error) => alert(error));
   };
 
-
-
   return (
+    // to-do: render a navbar component
+    // to-do: render a display notes by date component on one half of the page
     <div>
       <div>
         <h2>Notes</h2>
-        {notes.map((note) => (
-          <Note note={note} onDelete={deleteNote} key={note.id} />
+        {Object.keys(groupedNotes).sort().map((date) => (
+          <div key={date} className="collapsible-panel">
+            <div className="panel-header" onClick={() => togglePanel(date)}>
+              <h3>{date}</h3>
+              <button>
+                {openPanels[date] ? "Collapse" : "Expand"}
+              </button>
+            </div>
+            {openPanels[date] && (
+              <div className="panel-content">
+                {groupedNotes[date].map((note) => (
+                  <Note note={note} onDelete={deleteNote} key={note.id} />
+                ))}
+              </div>
+            )}
+          </div>
         ))}
+        {/* {notes.map((note) => (
+          <Note note={note} onDelete={deleteNote} key={note.id} />
+        ))} */}
       </div>
 
       <h2>Create a Note</h2>
