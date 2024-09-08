@@ -1,16 +1,19 @@
 import React from "react";
+import { useState } from "react";
 import "../styles/Note.css"
+import CreateUpdateTaskOverlay from '../components/CreateUpdateTaskOverlay';
 
-function Note({ note, onDelete }) {
+function Note({ note, onDelete, getNotes }) {
     const formattedDate = new Date(note.created_at).toLocaleDateString("en-US");
+    const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
-    const today = new Date();
-    console.log(today);
-    
+    const openOverlay = () => {
+        setIsOverlayOpen(true);
+    };
 
-    const handleNoteUpdate = () => {
-
-    }
+    const closeOverlay = () => {
+        setIsOverlayOpen(false);
+    };
 
     return (
         <div className="note-container">
@@ -22,8 +25,8 @@ function Note({ note, onDelete }) {
             <button className="delete-button" onClick={() => onDelete(note.id)}>
                 Delete
             </button>
-            <button className="delete-button" onClick={handleNoteUpdate}>Update</button>
-            {/* checkbox to  */}
+            <button className="update-button" onClick={openOverlay}>Update</button>
+            <CreateUpdateTaskOverlay closeOverlay={closeOverlay} getNotes={getNotes} isOverlayOpen={isOverlayOpen} task={note}/>
         </div>
     );
 }

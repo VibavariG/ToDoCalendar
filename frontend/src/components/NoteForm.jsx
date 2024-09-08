@@ -1,63 +1,85 @@
 import "../styles/Home.css"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api";
 
-function NoteForm( { getNotes }) {
+function NoteForm( { getNotes, noteData, isUpdate, closeOverlay }) {
+    const today = new Date().toISOString().split('T')[0];
+
     const [content, setContent] = useState("");
     const [title, setTitle] = useState("");
     const [frequency, setFrequency] = useState('one-time');
-    const [start_date, setStartDate] = useState(() => {
-        const today = new Date();
-        return today.toISOString().split('T')[0]; // Formats to 'YYYY-MM-DD'
-    });
-    const [end_date, setEndDate] = useState(() => {
-        const today = new Date();
-        return today.toISOString().split('T')[0]; // Formats to 'YYYY-MM-DD'
-    });
+    const [start_date, setStartDate] = useState(today);
+    const [end_date, setEndDate] = useState(today);
+
+    useEffect(() => {
+        // Prepopulate the form if it's an update
+        if (isUpdate && noteData) {
+          setTitle(noteData.title);
+          setContent(noteData.content);
+          setFrequency(noteData.frequency);
+          setStartDate(noteData.start_date);
+          setEndDate(noteData.end_date);
+        }
+    }, [isUpdate, noteData]);
 
     const handleFrequencyChange = (e) => {
         setFrequency(e.target.value);
-        setStartDate(() => {
-            const today = new Date();
-            return today.toISOString().split('T')[0]; // Formats to 'YYYY-MM-DD'
-        });
-        setEndDate('');
+        setStartDate(today);
+        setEndDate(today);
     };
 
     const handleDateChange = (e) => {
-        const { name, value } = e.target;
+        const { name, newDate } = e.target;
 
         if (name === 'deadline-date') {
-            setStartDate(value)
-            setEndDate(value)
+            setStartDate(newDate)
+            setEndDate(newDate)
         } else if (name === 'start-date') {
-            setStartDate(value)
+            setStartDate(newDate)
         } else if (name === 'end-date') {
-            setEndDate(value)
+            setEndDate(newDate)
         }
-
-        console.log('Frequency:', frequency);
-        console.log('Start Date:', start_date);
-        console.log('End Date:', end_date);
     }
 
-    const createNote = (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        api
-          .post("/api/notes/", { content, title, frequency, start_date, end_date })
-          .then((res) => {
-            if (res.status === 201) {
-              setTitle("")
-              setContent("")
-              alert("Note created!");
-            }
-            else alert("Failed to create note.");
-            getNotes();
-          })
-          .catch((err) => alert(err));
-    };
 
-    return <form onSubmit={createNote}>
+        const payload = { content, title, frequency, start_date, end_date };
+
+        if(isUpdate) {
+            api
+            .put(`/api/notes/${noteData.id}/`, payload)
+            .then((res) => {
+                if (res.status === 200) {
+                    alert("Note updated!");
+                } else {
+                    alert("Failed to update note.");
+                }
+                getNotes();
+                closeOverlay();
+            })
+            .catch((err) => alert(err));
+        } else {
+            api
+            .post("/api/notes/", payload)
+            .then((res) => {
+                if (res.status === 201) {
+                    alert("Note created!");
+                    setTitle("")
+                    setContent("")
+                    setFrequency("one-time");
+                    setStartDate(today);
+                    setEndDate(today);
+                }
+                else alert("Failed to create note.");
+                getNotes();
+                closeOverlay();
+            })
+            .catch((err) => alert(err));
+        }
+    }
+
+    return <form onSubmit={handleSubmit}>
         <label htmlFor="title">Title:</label>
         <br />
         <input
@@ -126,7 +148,7 @@ function NoteForm( { getNotes }) {
         </div>
         )}
         
-        <input type="submit" value="Submit"></input>
+        <input type="submit" value={isUpdate ? "Save" : "Create Task"}></input>
     </form>
 }
 
