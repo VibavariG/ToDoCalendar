@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import Note from "../components/Note";
-import NoteForm from "../components/NoteForm";
 import "../styles/Home.css"
+import CreateUpdateTaskOverlay from '../components/CreateUpdateTaskOverlay';
+import "../styles/Overlay.css";
 
 function Home() {
   const [notes, setNotes] = useState([]);
   const [openPanels, setOpenPanels] = useState({});
-  
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+
   useEffect(() => {
     getNotes();
   }, []);
@@ -26,8 +28,6 @@ function Home() {
   const groupNotesByDate = () => {
     return notes.reduce((grouped, note) => {
       const date = note.end_date;
-      console.log("Hi")
-      console.log(typeof(date))
       if(!grouped[date]) {
         grouped[date] = [];
       }
@@ -46,10 +46,9 @@ function Home() {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString); // Parse the date string into a Date object
-    const day = date.getDate(); // Get day (1-31)
-    
-    // Determine the correct ordinal suffix for the day
+    const date = new Date(dateString); 
+    const day = date.getDate(); 
+
     const ordinalSuffix = (day) => {
       if (day > 3 && day < 21) return "th";
       switch (day % 10) {
@@ -59,16 +58,22 @@ function Home() {
         default: return "th";
       }
     };
-  
+
     const formattedDate = new Intl.DateTimeFormat("en-GB", {
       month: "short",
       year: "numeric",
       weekday: "long",
     }).format(date);
-  
     return `${day}${ordinalSuffix(day)} ${formattedDate}`; // Example: 6th Sept, 2024, Friday
   };
   
+  const openOverlay = () => {
+    setIsOverlayOpen(true);
+  };
+
+  const closeOverlay = () => {
+    setIsOverlayOpen(false);
+  };
 
   const deleteNote = (id) => {
     api
@@ -81,10 +86,13 @@ function Home() {
       .catch((error) => alert(error));
   };
 
+
   return (
     // to-do: render a navbar component
     // to-do: render a display notes by date component on one half of the page
     <div>
+      <button onClick={openOverlay}>Create Task</button>
+      <CreateUpdateTaskOverlay closeOverlay={closeOverlay} getNotes={getNotes} isOverlayOpen={isOverlayOpen} />
       <div>
         <h2>Notes</h2>
         {Object.keys(groupedNotes).sort().map((date) => (
@@ -98,19 +106,13 @@ function Home() {
             {openPanels[date] && (
               <div className="panel-content">
                 {groupedNotes[date].map((note) => (
-                  <Note note={note} onDelete={deleteNote} key={note.id} />
+                  <Note note={note} onDelete={deleteNote} key={note.id} getNotes={getNotes} />
                 ))}
               </div>
             )}
           </div>
         ))}
-        {/* {notes.map((note) => (
-          <Note note={note} onDelete={deleteNote} key={note.id} />
-        ))} */}
       </div>
-
-      <h2>Create a Note</h2>
-      <NoteForm getNotes={getNotes} />
     </div>
   );
 }
